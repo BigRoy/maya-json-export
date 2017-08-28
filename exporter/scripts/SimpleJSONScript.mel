@@ -29,6 +29,19 @@ global proc int SimpleJSONScript(string $parent, string $action, string $setting
               setParent ..; // columnLayout
             setParent ..; // frameLayout
 
+          frameLayout -cll true -cl false -bv true -l "Precision";
+            columnLayout -adj true;
+              intSliderGrp -label "Precision"
+                           -field true
+                           -maxValue 16
+                           -minValue 1
+                           -fieldMinValue 1
+                           -fieldMaxValue 16
+                           -value 3
+                           precisionCb;
+            setParent ..; // columnLayout
+          setParent ..; // frameLayout
+
           frameLayout -cll true -cl false -bv true -l "Debug Options";
             columnLayout -adj true;
               checkBox -v false -l "Pretty Output" prettyOutputCb;
@@ -38,29 +51,35 @@ global proc int SimpleJSONScript(string $parent, string $action, string $setting
     }
     else if ($action == "query")
     {
-        string $option = "\"";
+        string $option = "";
+
         if (`checkBox -q -v vertsCb`)
-            $option += "vertices ";
+            $option += "vertices=1;";
         if (`checkBox -q -v normalsCb`)
-            $option += "normals ";
+            $option += "normals=1;";
         if (`checkBox -q -v uvsCb`)
-            $option += "uvs ";
+            $option += "uvs=1;";
         if (`checkBox -q -v groupsCb`)
-            $option += "groups ";
+            $option += "groups=1;";
         if (`checkBox -q -v dedupeCb`)
-            $option += "dedupe ";
+            $option += "dedupe=1;";
         if (`checkBox -q -v materialsCb`)
-            $option += "materials ";
+            $option += "materials=1;";
         if (`checkBox -q -v diffuseMapsCb`)
-            $option += "diffuseMaps ";
+            $option += "diffuseMaps=1;";
         if (`checkBox -q -v specularMapsCb`)
-            $option += "specularMaps ";
+            $option += "specularMaps=1;";
         if (`checkBox -q -v bumpMapsCb`)
-            $option += "bumpMaps ";
+            $option += "bumpMaps=1;";
         if (`checkBox -q -v prettyOutputCb`)
-            $option += "prettyOutput ";
-        $option += "\"";
-        eval($callback + $option);
+            $option += "prettyOutput=1;";
+
+        int $value = `intSliderGrp -q -v precisionCb`;
+        $option += "precision=" + $value + ";";
+
+        print($option);
+
+        eval( $callback + "\"" + $option + "\"" );
     }
     return 1;
 }

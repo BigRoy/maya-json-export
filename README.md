@@ -29,6 +29,8 @@ Exports:
 
 > ###### :seedling: This plugin is experimental and subject to change.
 
+> Note: This plug-in is not using an official ThreeJS JSON format but specifies one that loads optimally for scenes with many instances and reduces the filesizes as much as possible.
+
 ## Demo
 
 See the [demo](http://jam3.github.io/maya-json-export/index.html) which was exported with this plugin, and loaded directly into a `BufferGeometry`. 
@@ -45,16 +47,16 @@ The format roughly looks like this:
   },
   "instances": [ 
     {
-      "position": [0.0, 0.0, 0.0],
-      "quaternion": [0.0, 0.0, 0.0, 1.0],
-      "scale": [1.0, 1.0, 1.0],
+      "p": [0.0, 0.0, 0.0],
+      "q": [0.0, 0.0, 0.0, 1.0],
+      "s": [1.0, 1.0, 1.0],
       "id": "Tree",
       "name": "Tree_01"
     },
     {
-      "position": [5.0, 2.0, 3.0],
-      "quaternion": [0.0, 0.0, 0.0, 1.0],
-      "scale": [1.0, 1.0, 1.0],
+      "p": [5.0, 2.0, 3.0],
+      "q": [0.0, 0.0, 0.0, 1.0],
+      "s": [1.0, 1.0, 1.0],
       "id": "Tree",
       "name": "Tree_02"
     },
@@ -99,9 +101,9 @@ With the regular ThreeJS exporter, you would end up with a lot of repeated trian
 
 - `id` String (e.g. `'Building_Tall'`)
 - `name` String (e.g. `'Building_Tall_Shape01'`)
-- `position` [ x, y, z ]
-- `scale` [ x, y, z ]
-- `quaternion` [ x, y, z, w ]
+- `p` [ x, y, z ] (Position vector)
+- `s` [ x, y, z ] (Scale vector)
+- `q` [ x, y, z, w ] (Quaternion rotation)
 
 Now, your scene will be much better optimized to make use of ThreeJS `Geometry` and `Mesh` classes. Or, you could use `InstancedBufferGeometry` to take advantage of hardware instancing.
 
