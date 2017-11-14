@@ -27,13 +27,13 @@ kDefaultOptionsString = ''
 
 def _get_mdagpath(node):
     """Return maya.api.OpenMaya.MDagPath from Pymel node
-    
+
     Args:
         node (pymel.core.PyNode): Maya node
-        
+
     Returns:
         maya.api.OpenMaya.MDagPath: The path to the node.
-        
+
     """
     sel = om2.MSelectionList()
     sel.add(node.name())
@@ -61,12 +61,12 @@ def get_hierarchy(nodes):
     This is a workaround to `pm.listRelatives(allDescendents=True)` that
     will correctly include the instances present under the hierarchy, because
     `pm.listRelatives` does not support that correctly.
-    
+
     Note: This not return the nodes itself, only the children.
-    
+
     Args:
         nodes (list): List of nodes to get hierarchy from.
-        
+
     Returns:
         list: List of pymel.core.PyNode nodes in the hierarchy.
 
@@ -118,7 +118,10 @@ class SimpleJSONWriter(object):
             "bumpMaps": False,
             "prettyOutput": True,
             "selectedOnly": True,
-            "precision": 3,
+            "precisionTransform": 3,
+            "precisionVertices": 3,
+            "precisionNormals": 3,
+            "precisionUv": 4,
             # When optimize instance matrix is True the identity position,
             # rotation and scale will not be included in the output data.
             # E.g. a scale of [1.0, 1.0, 1.0] will be removed from the data.
@@ -260,12 +263,13 @@ class SimpleJSONWriter(object):
             self.log.warning("Shear transformation is not supported: %s",
                              parent.name())
 
+        precision = self.options['precisionTransform']
         instance = {
             'id': geometryName,
             'name': instanceName,
-            'p': self._roundPos(translation),
-            's': [self._round(x) for x in scale],
-            'q': self._roundQuat(quaternion)
+            'p': self._roundPos(translation, precision),
+            's': [round(x, precision) for x in scale],
+            'q': self._roundQuat(quaternion, precision)
         }
 
         # Optimize instance by removing redundant identity matrix data
@@ -284,14 +288,11 @@ class SimpleJSONWriter(object):
 
         self.instances.append(instance)
 
-    def _round(self, x):
-        return round(x, self.options['precision'])
+    def _roundPos(self, pos, precision):
+        return map(lambda x: round(x, precision), [pos.x, pos.y, pos.z])
 
-    def _roundPos(self, pos):
-        return map(lambda x: self._round(x), [pos.x, pos.y, pos.z])
-
-    def _roundQuat(self, rot):
-        return map(lambda x: self._round(x), [rot.x, rot.y, rot.z, rot.w])
+    def _roundQuat(self, rot, precision):
+        return map(lambda x: round(x, precision), [rot.x, rot.y, rot.z, rot.w])
 
     def _getGroups(self, mesh):
 
@@ -363,14 +364,16 @@ class SimpleJSONWriter(object):
 
     def _getVertices(self, fn_mesh):
         points = []
+        precision = self.options['precisionVertices']
         for point in fn_mesh.getPoints(space=om2.MSpace.kObject):
-            points += self._roundPos(point)
+            points += self._roundPos(point, precision)
         return points
 
     def _getNormals(self, fn_mesh):
         normals = []
+        precision = self.options['precisionNormals']
         for normal in fn_mesh.getNormals(space=om2.MSpace.kObject):
-            normals += self._roundPos(normal)
+            normals += self._roundPos(normal, precision)
         return normals
 
     def _getNormalIndices(self, fn_mesh):
@@ -390,9 +393,10 @@ class SimpleJSONWriter(object):
 
     def _getUVs(self, fn_mesh):
         uvs = []
+        precision = self.options['precisionUv']
         for u, v in zip(*fn_mesh.getUVs()):
-            uvs.append(self._round(u))
-            uvs.append(self._round(v))
+            uvs.append(round(u, precision))
+            uvs.append(round(v, precision))
         return uvs
 
     def _exportMaterials(self):
